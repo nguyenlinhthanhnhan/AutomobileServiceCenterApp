@@ -10,7 +10,7 @@ namespace ASC.DataAccess
 {
     public class UnitOfWork:IUnitOfWork
     {
-        private bool _disposed;
+        //private bool _disposed;
         private bool _complete;
         private Dictionary<string, object> _repositories;
         public Queue<Task<Action>> RollbackActions { get; set; }
