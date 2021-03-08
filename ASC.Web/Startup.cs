@@ -1,14 +1,16 @@
 using ASC.Web.Configuration;
 using ASC.Web.Data;
+using ASC.Web.Models;
+using ElCamino.AspNetCore.Identity.AzureTable.Model;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,13 +30,19 @@ namespace ASC.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddIdentity<ApplicationUser, ElCamino.AspNetCore.Identity.AzureTable.Model.IdentityRole>(options => options.User.RequireUniqueEmail = true)
+                    .AddAzureTableStores<ApplicationDbContext>(new Func<IdentityConfiguration>(() =>
+                    {
+                        IdentityConfiguration idConfig = new();
+                        idConfig.TablePrefix = Configuration.GetSection("IdentityAzureTable:IdentityConfiguration:TablePrefix").Value;
+                        idConfig.StorageConnectionString = Configuration.GetSection("IdentityAzureTable:IdentityConfiguration:StorageConnectionString").Value;
+                        idConfig.LocationMode = Configuration.GetSection("IdentityAzureTable:IdentityConfiguration:LocationMode").Value;
+                        return idConfig;
+                    }))
+                    .AddDefaultTokenProviders()
+                    .CreateAzureTablesIfNotExists<ApplicationDbContext>();
             services.AddControllersWithViews();
 
             services.AddOptions();
@@ -43,10 +51,13 @@ namespace ASC.Web
             services.AddDistributedMemoryCache();
             services.AddSession();
             services.AddMvc();
+
+            // Add application services
+            services.AddSingleton<IIdentitySeed, IdentitySeed>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public async void Configure(IApplicationBuilder app, IWebHostEnvironment env, IIdentitySeed storageSeed)
         {
             if (env.IsDevelopment())
             {
@@ -76,6 +87,11 @@ namespace ASC.Web
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
+
+            using var scope = app.ApplicationServices.CreateScope();
+            await storageSeed.Seed(scope.ServiceProvider.GetService<UserManager<ApplicationUser>>(),
+                               scope.ServiceProvider.GetService<RoleManager<ElCamino.AspNetCore.Identity.AzureTable.Model.IdentityRole>>(),
+                               scope.ServiceProvider.GetService<IOptions<ApplicationSettings>>());
         }
     }
 }
