@@ -34,5 +34,7 @@ namespace ASC.Web.Controllers
             ViewBag.Title = _settings.Value.ApplicationTitle;
             return View();
         }
+
+        public IActionResult Contact() => View();
     }
 }
