@@ -4,6 +4,7 @@ using ASC.Web.Models;
 using ElCamino.AspNetCore.Identity.AzureTable.Model;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
@@ -15,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IdentityRole = ElCamino.AspNetCore.Identity.AzureTable.Model.IdentityRole;
 
 namespace ASC.Web
 {
@@ -32,7 +34,7 @@ namespace ASC.Web
         {
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddIdentity<ApplicationUser, ElCamino.AspNetCore.Identity.AzureTable.Model.IdentityRole>(options => options.User.RequireUniqueEmail = true)
+            services.AddIdentity<ApplicationUser, IdentityRole>(options => options.User.RequireUniqueEmail = true)
                     .AddAzureTableStores<ApplicationDbContext>(new Func<IdentityConfiguration>(() =>
                     {
                         IdentityConfiguration idConfig = new();
@@ -43,6 +45,18 @@ namespace ASC.Web
                     }))
                     .AddDefaultTokenProviders()
                     .CreateAzureTablesIfNotExists<ApplicationDbContext>();
+
+            services.AddAuthentication();
+            services.AddAuthorization(config =>
+            {
+                config.AddPolicy("ActiveOnly", policy => policy.RequireClaim("IsActive",new string[] { "True", "true","TRUE" }));
+            });
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.AccessDeniedPath = new PathString("/Account/AccessDenied");
+            });
+
             services.AddControllersWithViews();
 
             services.AddOptions();
@@ -50,6 +64,7 @@ namespace ASC.Web
 
             services.AddDistributedMemoryCache();
             services.AddSession();
+
             services.AddMvc();
 
             // Add application services

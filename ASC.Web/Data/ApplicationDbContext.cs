@@ -1,9 +1,5 @@
 ﻿using ElCamino.AspNetCore.Identity.AzureTable;
 using ElCamino.AspNetCore.Identity.AzureTable.Model;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ASC.Web.Data
 {

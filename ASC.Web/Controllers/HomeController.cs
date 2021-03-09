@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace ASC.Web.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : AnonymousController
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IOptions<ApplicationSettings> _settings;
@@ -34,7 +34,5 @@ namespace ASC.Web.Controllers
             ViewBag.Title = _settings.Value.ApplicationTitle;
             return View();
         }
-
-        public IActionResult Dashboard() => View();
     }
 }

@@ -66,12 +66,18 @@
             </a>
         </li>
         <li>
-            <a class="collapsible-header" href="#!">
+            <a class="collapsible-header" href="#!" id="ancrLogout">
                 <i class="material-icons">exit_to_app</i>
                 Logout
             </a>
         </li>
     </ul>
+    <script>
+        // Logout
+        document.getElementById('ancrLogout').addEventListener("click", function () {
+            document.getElementById('logout_form').submit();
+        });
+    </script>
 </header>
 <!-- Render Body -->
 <main class="secureLayout">
@@ -123,6 +129,10 @@
     </div>
 </footer>
 
+<form class="hide" method="post" id="logout_form" asp-controller="Account" asp-action="Logout">
+    <input type="submit" value="Logout" />
+</form>
+
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function () {
         var elems = document.querySelectorAll('.collapsible');
@@ -135,4 +145,6 @@
         });
         document.querySelector('.button-collapse').sideNav('show');
     });
+
+    @RenderSectionAsync("Scripts", required: false)
 </script>
