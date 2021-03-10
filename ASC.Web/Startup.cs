@@ -1,6 +1,7 @@
 using ASC.Web.Configuration;
 using ASC.Web.Data;
 using ASC.Web.Models;
+using ASC.Web.Services;
 using ElCamino.AspNetCore.Identity.AzureTable.Model;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -69,8 +70,9 @@ namespace ASC.Web
 
             // Add application services
             services.AddSingleton<IIdentitySeed, IdentitySeed>();
-            // To access HttpContext in views
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddTransient<IEmailSender, AuthMessageSender>();
+            services.AddTransient<ISMSSender, AuthMessageSender>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>(); // To access HttpContext in views
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -38,20 +38,22 @@ namespace ASC.Web.Data
             }
 
             // Create admin if he doesn't exist
-            var admin = await userManager.FindByEmailAsync(options.Value.AdminEmail);
+            var admin = await userManager.FindByEmailAsync(Environment.GetEnvironmentVariable("MYOUTLOOKEMAIL"));
+            // Uncomment if you use config on application.json
+            //var admin = await userManager.FindByEmailAsync(Environment.GetEnvironmentVariable("MYOUTLOOKEMAIL"));
             if(admin is null)
             {
                 ApplicationUser user = new()
                 {
                     UserName = options.Value.AdminName,
-                    Email = options.Value.AdminEmail,
+                    Email = Environment.GetEnvironmentVariable("MYOUTLOOKEMAIL"),
                     EmailConfirmed = true
                 };
 
                 IdentityResult result = await userManager.CreateAsync(user, options.Value.AdminPassword);
                 await userManager.AddClaimAsync(user,
                                                 new System.Security.Claims.Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
-                                                                                 options.Value.AdminEmail));
+                                                                                 Environment.GetEnvironmentVariable("MYOUTLOOKEMAIL")));
                 await userManager.AddClaimAsync(user, new System.Security.Claims.Claim("IsActive", "True"));
 
                 // Add admin to Admin roles

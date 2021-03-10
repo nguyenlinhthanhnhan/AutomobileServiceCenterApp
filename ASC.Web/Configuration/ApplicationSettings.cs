@@ -12,5 +12,10 @@ namespace ASC.Web.Configuration
         public string AdminName { get; set; }
         public string AdminPassword { get; set; }
         public string Roles { get; set; }
+
+        public string SMTPServer { get; set; }
+        public int SMTPPort { get; set; }
+        public string SMTPAccount { get; set; }
+        public string SMTPPassword { get; set; }
     }
 }

@@ -90,6 +90,11 @@
             document.getElementById('logout_form').submit();
         });
 
+        // Reset password
+        document.getElementById('ancrResetPassword').addEventListener("click", function () {
+            document.getElementById('resetPassword_form').submit();
+        });
+
         // Initialize collapsible
         document.addEventListener('DOMContentLoaded', function () {
             var elems = document.querySelectorAll('.collapsible');
@@ -152,6 +157,8 @@
 <form class="hide" method="post" id="logout_form" asp-controller="Account" asp-action="Logout">
     <input type="submit" value="Logout" />
 </form>
+
+<form class="hide" method="post" id="resetPassword_form" asp-controller="Account" asp-action="InitiateResetPassword"></form>
 
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function () {

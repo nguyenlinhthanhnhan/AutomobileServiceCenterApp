@@ -1,6 +1,7 @@
 ﻿using ASC.Utilities;
 using ASC.Web.Models;
 using ASC.Web.Models.AccountViewModels;
+using ASC.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -18,14 +19,28 @@ namespace ASC.Web.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<AccountController> _logger;
+        private readonly IEmailSender _emailSender;
+        private readonly ISMSSender _sMSSender;
 
         public AccountController(UserManager<ApplicationUser> userManager,
                                  SignInManager<ApplicationUser> signInManager,
-                                 ILogger<AccountController> logger)
+                                 ILogger<AccountController> logger,
+                                 IEmailSender emailSender,
+                                 ISMSSender sMSSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
+            _emailSender = emailSender;
+            _sMSSender = sMSSender;
+        }
+
+        private void AddErrors(IdentityResult result)
+        {
+            foreach(var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
         }
 
         [HttpGet]
@@ -113,5 +128,58 @@ namespace ASC.Web.Controllers
         }
 
         public IActionResult AccessDenied() => View();
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPassword(string code = null) => code == null ? View("Error") : View();
+
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> InitiateResetPassword()
+        {
+            // Find user
+            var userEmail = HttpContext.User.GetCurrenUserDetails().Email;
+            var user = await _userManager.FindByEmailAsync(userEmail);
+
+            // Generate User code
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var callbackUrl = Url.Action(nameof(ResetPassword),
+                                         "Account",
+                                         new { userId = user.Id, code = code },
+                                         protocol: HttpContext.Request.Scheme);
+
+            // Send email
+            await _emailSender.SendEmailAsync(userEmail,
+                                              "Reset Password",
+                                              $"Please reset your password by clicking here: {callbackUrl}");
+            return View("ResetPasswordEmailConfirmation");
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPasswordConfirmation() => View();
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+            var user = await _userManager.FindByEmailAsync(HttpContext.User.GetCurrenUserDetails().Email);
+            if(user is null)
+            {
+                // Dont reveal that user does not exist
+                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
+            }
+            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
+            if (result.Succeeded)
+            {
+                if (HttpContext.User.Identity.IsAuthenticated) await _signInManager.SignOutAsync();
+                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
+            }
+
+            AddErrors(result);
+            return View();
+        }
     }
 }

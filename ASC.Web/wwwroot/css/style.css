@@ -105,3 +105,11 @@ header.secureLayout, main.secureLayout, footer.secureLayout {
 .validation-summary-errors {
     color: #FF4081;
 }
+
+.margin-top-50px {
+    margin-top: 50px;
+}
+
+.margin-bottom-50px {
+    margin-bottom: 50px;
+}
