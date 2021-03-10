@@ -181,5 +181,33 @@ namespace ASC.Web.Controllers
             AddErrors(result);
             return View();
         }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPassword() => View();
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if(user is null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                {
+                    // Dont reveal that user does not exist or is not confirmed
+                    return View("ResetPasswordEmailConfirmation");
+                }
+
+                // Send an email with this link
+                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var callbackUrl = Url.Action(nameof(ResetPassword), "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
+                await _emailSender.SendEmailAsync(model.Email, "Reset Password", $"Please reset your password by clicking here: {callbackUrl}");
+                return View("ResetPasswordEmailConfirmation");
+            }
+
+            return View(model);
+        }
     }
 }
