@@ -11,7 +11,7 @@
     <nav class="top-nav blue-grey lighten-1">
         <div class="nav-wrapper row valign-wrapper">
             <div class="col s12 valign-wrapper">
-                <a href="#" data-activates="nav-mobile" class="button-collapse sidenav-trigger top-nav full hide-on-large-only white-text"><i class="material-icons">menu</i></a>
+                <a href="#" data-target="nav-mobile" class="button-collapse sidenav-trigger top-nav full hide-on-large-only white-text"><i class="material-icons">menu</i></a>
                 <h5><a class="page-title">Automobile Service Center</a></h5>
             </div>
         </div>
@@ -65,10 +65,17 @@
             </a>
         </li>
         <li>
-            <a class="collapsible-header" href="#!">
-                <i class="material-icons">settings</i>
-                Settings
-            </a>
+            <ul class="collapsible">
+                <li>
+                    <a class="collapsible-header">Settings<i class="material-icons">settings</i></a>
+                    <div class="collapsible-body">
+                        <ul>
+                            <li><a asp-controller="Account" asp-action="Profile" class="collapsible-header">Profile<i class="material-icons">system_update_alt</i></a></li>
+                            <li><a class="collapsible-header" href="#!" id="ancrResetPassword">Reset Password<i class="material-icons">lock_outline</i></a></li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
         </li>
         <li>
             <a class="collapsible-header" href="#!" id="ancrLogout">
@@ -77,11 +84,19 @@
             </a>
         </li>
     </ul>
-    <script>
+    <script type="text/javascript">
         // Logout
         document.getElementById('ancrLogout').addEventListener("click", function () {
             document.getElementById('logout_form').submit();
         });
+
+        // Initialize collapsible
+        document.addEventListener('DOMContentLoaded', function () {
+            var elems = document.querySelectorAll('.collapsible');
+            var instances = M.Collapsible.init(elems, { accordion: false });
+        });
+
+        
     </script>
 </header>
 <!-- Render Body -->
@@ -140,16 +155,7 @@
 
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function () {
-        var elems = document.querySelectorAll('.collapsible');
-        var instances = M.Collapsible.init(elems, { accordion: false });
+        var elems = document.querySelectorAll('.sidenav');
+        var instances = M.Sidenav.init(elems, { accordion: false });
     });
-
-    document.querySelector(document).ready(function () {
-        document.querySelector('.button-collapse').sideNav({
-            menuWidth: 300, edge: 'left', closeOnClick: false, draggable: true
-        });
-        document.querySelector('.button-collapse').sideNav('show');
-    });
-
-    @RenderSectionAsync("Scripts", required: false)
 </script>

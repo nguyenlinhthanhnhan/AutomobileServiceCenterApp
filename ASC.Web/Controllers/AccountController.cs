@@ -1,4 +1,5 @@
-﻿using ASC.Web.Models;
+﻿using ASC.Utilities;
+using ASC.Web.Models;
 using ASC.Web.Models.AccountViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ASC.Web.Controllers
@@ -75,7 +77,7 @@ namespace ASC.Web.Controllers
                                                                       lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation(1, "User logged in.");
+                    _logger.LogInformation(1, $"User {user.UserName}: {user.Email} logged in.");
                     if(roles.Select(x=>x.ToLower()).Contains("admin")) return RedirectToAction("Dashboard", "Dashboard");
                     else return LocalRedirect(returnUrl??Url.Content("~/"));
                 }
@@ -102,8 +104,11 @@ namespace ASC.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            var currentUserEmail = User.FindFirst(ClaimTypes.Email).Value;
+            var currentUserName = User.FindFirst(ClaimTypes.Name).Value;
+
             await _signInManager.SignOutAsync();
-            _logger.LogInformation(4, "User logged out");
+            _logger.LogInformation(4, $"User {currentUserName}: {currentUserEmail} logged out");
             return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
