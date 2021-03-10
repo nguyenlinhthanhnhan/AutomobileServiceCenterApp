@@ -7,4 +7,4 @@ but the author wrote in .NET Core 1.1 and left more and more bug so I am trying 
 - Visual Studio (Community) 2019 with .NET 5 latest version
 - Need install the following VS wokdloads: ASP.NET Web Development, Azure Development, .NET Core Cross-Platform Development
 # Attention
-- I use some secrect key to store my sensitive information, so you must replace some code line, run and see ERR to fix =)) good luck :v or contact me to get help (my contacts is in this project)
+- I was added a discussion, https://github.com/nhannguyen1295/AutomobileServiceCenterApp/discussions , ask me when you need help.
