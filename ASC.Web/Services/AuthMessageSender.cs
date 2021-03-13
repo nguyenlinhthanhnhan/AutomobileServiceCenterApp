@@ -1,4 +1,5 @@
-﻿using ASC.Web.Configuration;
+﻿using ASC.Models.BaseTypes;
+using ASC.Web.Configuration;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
@@ -6,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 
 namespace ASC.Web.Services
 {
@@ -22,15 +24,15 @@ namespace ASC.Web.Services
         {
             var emailMessage = new MimeMessage();
             emailMessage.From.Add(new MailboxAddress("Nhan Nguyen, Test ASC App",
-                                                     Environment.GetEnvironmentVariable("SMTPMailAccount")));
+                                                     Environment.GetEnvironmentVariable(ProjectConstants.SMTPMailAccount)));
             emailMessage.To.Add(MailboxAddress.Parse(email));
             emailMessage.Subject = subject;
             emailMessage.Body = new TextPart("plain") { Text = message };
 
             using var client = new SmtpClient();
             await client.ConnectAsync(_settings.Value.SMTPServer, _settings.Value.SMTPPort, false);
-            await client.AuthenticateAsync(Environment.GetEnvironmentVariable("SMTPMailAccount"),
-                                           Environment.GetEnvironmentVariable("SMTPMailPassword"));
+            await client.AuthenticateAsync(Environment.GetEnvironmentVariable(ProjectConstants.SMTPMailAccount),
+                                           Environment.GetEnvironmentVariable(ProjectConstants.SMTPMailPassword));
             await client.SendAsync(emailMessage);
             await client.DisconnectAsync(true);
         }

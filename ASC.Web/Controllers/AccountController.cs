@@ -145,7 +145,7 @@ namespace ASC.Web.Controllers
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
             var callbackUrl = Url.Action(nameof(ResetPassword),
                                          "Account",
-                                         new { userId = user.Id, code = code },
+                                         new { email = user.Email, code = code },
                                          protocol: HttpContext.Request.Scheme);
 
             // Send email
@@ -162,10 +162,10 @@ namespace ASC.Web.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model, [FromForm] string emailInput)
         {
             if (!ModelState.IsValid) return View(model);
-            var user = await _userManager.FindByEmailAsync(HttpContext.User.GetCurrenUserDetails().Email);
+            var user = await _userManager.FindByEmailAsync(emailInput);
             if(user is null)
             {
                 // Dont reveal that user does not exist
@@ -202,7 +202,7 @@ namespace ASC.Web.Controllers
 
                 // Send an email with this link
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var callbackUrl = Url.Action(nameof(ResetPassword), "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
+                var callbackUrl = Url.Action(nameof(ResetPassword), "Account", new { email = user.Email, code = code }, protocol: HttpContext.Request.Scheme);
                 await _emailSender.SendEmailAsync(model.Email, "Reset Password", $"Please reset your password by clicking here: {callbackUrl}");
                 return View("ResetPasswordEmailConfirmation");
             }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using ASC.Models.BaseTypes;
 
 namespace ASC.Web.Data
 {
@@ -38,22 +39,22 @@ namespace ASC.Web.Data
             }
 
             // Create admin if he doesn't exist
-            var admin = await userManager.FindByEmailAsync(Environment.GetEnvironmentVariable("MYOUTLOOKEMAIL"));
+            var admin = await userManager.FindByEmailAsync(Environment.GetEnvironmentVariable(ProjectConstants.MYOUTLOOKEMAIL));
             // Uncomment if you use config on application.json
-            //var admin = await userManager.FindByEmailAsync(Environment.GetEnvironmentVariable("MYOUTLOOKEMAIL"));
+            //var admin = await userManager.FindByEmailAsync(Environment.GetEnvironmentVariable(ProjectConstants.MYOUTLOOKEMAIL));
             if(admin is null)
             {
                 ApplicationUser user = new()
                 {
                     UserName = options.Value.AdminName,
-                    Email = Environment.GetEnvironmentVariable("MYOUTLOOKEMAIL"),
+                    Email = Environment.GetEnvironmentVariable(ProjectConstants.MYOUTLOOKEMAIL),
                     EmailConfirmed = true
                 };
 
                 IdentityResult result = await userManager.CreateAsync(user, options.Value.AdminPassword);
                 await userManager.AddClaimAsync(user,
                                                 new System.Security.Claims.Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
-                                                                                 Environment.GetEnvironmentVariable("MYOUTLOOKEMAIL")));
+                                                                                 Environment.GetEnvironmentVariable(ProjectConstants.MYOUTLOOKEMAIL)));
                 await userManager.AddClaimAsync(user, new System.Security.Claims.Claim("IsActive", "True"));
 
                 // Add admin to Admin roles
