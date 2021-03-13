@@ -22,8 +22,13 @@
             <div class="user-view">
                 <div class="background blue-grey lighten-1"></div>
                 <a href="#!user"><img class="circle" src="~/images/male.png"></a>
+                @foreach (var role in currentUser.Roles)
+                {
+                    <a href="#!role"><span class="white-text name">@role</span></a>
+                }
                 <a href="#!name"><span class="white-text name">@currentUser.Name</span></a>
                 <a href="#!email"><span class="white-text email">@currentUser.Email</span></a>
+
             </div>
         </li>
         <li>
@@ -39,8 +44,13 @@
                     <div class="collapsible-body">
                         <ul>
                             <li><a href="#!">Customers<i class="material-icons">account_box</i></a></li>
-                            <li><a href="#!">Provision User<i class="material-icons">person_add</i></a></li>
                             <li><a href="#!">Deactivate User<i class="material-icons">remove_circle</i></a></li>
+                            <li>
+                                <a asp-controller="Account" asp-action="ServiceEngineers">
+                                    Service Engineers
+                                    <i class="material-icons">person_add</i>
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </li>

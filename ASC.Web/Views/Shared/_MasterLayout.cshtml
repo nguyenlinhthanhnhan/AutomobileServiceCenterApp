@@ -9,22 +9,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0,user-scalable=no" />
     <title>@_configurationSettings.Value.ApplicationTitle</title>
     <!-- CSS -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="//cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css"
+          type="text/css" rel="stylesheet" media="screen,projection" />
+    <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="~/css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection" />
     <link href="~/css/style.css" type="text/css" rel="stylesheet" media="screen,projection" />
 </head>
 <body>
-    <!-- Render Body -->
-    @RenderBody()
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/js/materialize.min.js"></script>
-    <script src="~/js/init.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+    <script src="//cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="~/js/materialize.min.js"></script>
+    <script src="~/js/init.js"></script>
 
-    <script>
-    @RenderSection("Scripts", required: false)
-    </script>
+    <!-- Render Body -->
+    @RenderBody()
 </body>
 </html>

@@ -57,8 +57,12 @@ footer.page-footer {
 }
 
 /* Adjusting padding to display Side Nav */
-header.secureLayout, main.secureLayout, footer.secureLayout {
+header.secureLayout, footer.secureLayout {
     padding-left: 300px;
+}
+
+main.secureLayout{
+    padding-left:310px;
 }
 
 @media only screen and (max-width : 992px) {
@@ -112,4 +116,12 @@ header.secureLayout, main.secureLayout, footer.secureLayout {
 
 .margin-bottom-50px {
     margin-bottom: 50px;
+}
+
+.padding-bottom-15px {
+    padding-bottom: 15px !important;
+}
+
+.cursor-hand {
+    cursor: pointer
 }

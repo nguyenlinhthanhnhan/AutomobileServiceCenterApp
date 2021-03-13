@@ -109,7 +109,7 @@ namespace ASC.Web
 
             using var scope = app.ApplicationServices.CreateScope();
             await storageSeed.Seed(scope.ServiceProvider.GetService<UserManager<ApplicationUser>>(),
-                               scope.ServiceProvider.GetService<RoleManager<ElCamino.AspNetCore.Identity.AzureTable.Model.IdentityRole>>(),
+                               scope.ServiceProvider.GetService<RoleManager<IdentityRole>>(),
                                scope.ServiceProvider.GetService<IOptions<ApplicationSettings>>());
         }
     }
