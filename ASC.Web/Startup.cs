@@ -1,3 +1,7 @@
+using ASC.Business;
+using ASC.Business.Interfaces;
+using ASC.DataAccess;
+using ASC.DataAccess.Interfaces;
 using ASC.Models.BaseTypes;
 using ASC.Web.Configuration;
 using ASC.Web.Data;
@@ -17,6 +21,8 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using IdentityRole = ElCamino.AspNetCore.Identity.AzureTable.Model.IdentityRole;
 
@@ -63,6 +69,8 @@ namespace ASC.Web
                 options.AccessDeniedPath = new PathString("/Account/AccessDenied");
             });
 
+            services.AddAutoMapper(typeof(Startup));
+
             services.AddControllersWithViews();
 
             services.AddOptions();
@@ -71,17 +79,26 @@ namespace ASC.Web
             services.AddDistributedMemoryCache();
             services.AddSession();
 
-            services.AddMvc();
+            services.AddMvc().AddJsonOptions(options=> 
+            {
+                options.JsonSerializerOptions.DictionaryKeyPolicy = null;
+                options.JsonSerializerOptions.PropertyNamingPolicy = null;
+            });
 
             // Add application services
+            services.AddScoped<IUnitOfWork>(x => new UnitOfWork(Configuration.GetConnectionString("DefaultConnection")));
             services.AddSingleton<IIdentitySeed, IdentitySeed>();
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISMSSender, AuthMessageSender>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>(); // To access HttpContext in views
+            services.AddScoped<IMasterDataOperations, MasterDataOperations>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public async void Configure(IApplicationBuilder app, IWebHostEnvironment env, IIdentitySeed storageSeed)
+        public async void Configure(IApplicationBuilder app,
+                                    IWebHostEnvironment env,
+                                    IIdentitySeed storageSeed,
+                                    IUnitOfWork unitOfWork)
         {
             if (env.IsDevelopment())
             {
@@ -116,6 +133,15 @@ namespace ASC.Web
             await storageSeed.Seed(scope.ServiceProvider.GetService<UserManager<ApplicationUser>>(),
                                scope.ServiceProvider.GetService<RoleManager<IdentityRole>>(),
                                scope.ServiceProvider.GetService<IOptions<ApplicationSettings>>());
+            // Auto create table
+            var models = Assembly.Load(new AssemblyName("ASC.Models")).GetTypes()
+                                 .Where(x => x.Namespace == "ASC.Models.Models").ToList();
+            foreach (var model in models)
+            {
+                var repositoryInstance = Activator.CreateInstance(typeof(Repository<>).MakeGenericType(model), unitOfWork);
+                MethodInfo method = typeof(Repository<>).MakeGenericType(model).GetMethod("CreateTableAsync");
+                method.Invoke(repositoryInstance, new object[0]);
+            }
         }
     }
 }

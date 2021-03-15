@@ -31,7 +31,7 @@
                 Dashboard
             </a>
         </li>
-        @if (currentUser.Roles.Any(x=>x=="Admin"))
+        @if (currentUser.Roles.Any(x => x == "Admin"))
         {
             <li>
                 <ul class="collapsible" data-collapsible="accordion">
@@ -43,7 +43,7 @@
                                     <a asp-controller="Account" asp-action="Customers">
                                         Customers
                                         <i class="material-icons">account_box</i>
-                                        </a>
+                                    </a>
                                 </li>
                                 <li><a href="#!">Deactivate User<i class="material-icons">remove_circle</i></a></li>
                                 <li>
@@ -75,6 +75,32 @@
                 <i class="material-icons">inbox</i>
                 Promotions
             </a>
+        </li>
+        <li>
+            <ul class="collapsible collapsible-accordion">
+                <li>
+                    <a class="collapsible-header">
+                        Master Data
+                        <i class="material-icons">perm_data_setting</i>
+                    </a>
+                    <div class="collapsible-body">
+                        <ul>
+                            <li>
+                                <a asp-controller="MasterData" asp-action="MasterKeys" class="collapsible-header">
+                                    Master Keys
+                                    <i class="material-icons">data_usage</i>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="collapsible-header" asp-controller="MasterData" asp-action="MasterValues">
+                                    Master Values
+                                    <i class="material-icons">settings_system_daydream</i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
         </li>
         <li>
             <ul class="collapsible">

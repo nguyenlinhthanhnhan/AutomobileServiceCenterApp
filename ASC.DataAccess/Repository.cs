@@ -111,7 +111,7 @@ namespace ASC.DataAccess
                 // Make sure we do not use same RowKey and PartitionKey
                 var auditEntity = ObjectExtensions.CopyObject<T>(operation.Entity);
                 auditEntity.PartitionKey = $"{auditEntity.PartitionKey}-{auditEntity.RowKey}";
-                auditEntity.RowKey = $"{DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fff")}";
+                auditEntity.RowKey = $"{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ss.fff}";
 
                 var auditOperation = TableOperation.Insert(auditEntity);
                 var auditRollbackAction = CreateRollbackAction(auditOperation, true);
@@ -172,7 +172,7 @@ namespace ASC.DataAccess
 
         public async Task<IEnumerable<T>> FindAllAsync()
         {
-            TableQuery<T> query = new TableQuery<T>();
+            TableQuery<T> query = new();
             TableContinuationToken tableContinuationToken = null;
             var result = await storageTable.ExecuteQuerySegmentedAsync(query, tableContinuationToken);
             return result as IEnumerable<T>;
