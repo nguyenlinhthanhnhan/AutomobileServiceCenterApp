@@ -307,5 +307,154 @@ namespace ASC.Web.Controllers
 
             return RedirectToAction();
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var user = await _userManager.FindByEmailAsync(HttpContext.User.GetCurrenUserDetails().Email);
+            return View(new ProfileViewModel { Username = user.UserName, IsEditSuccess = false });
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Profile(ProfileViewModel profile)
+        {
+            var user = await _userManager.FindByEmailAsync(HttpContext.User.GetCurrenUserDetails().Email);
+            user.UserName = profile.Username;
+            var result = await _userManager.UpdateAsync(user);
+            await _signInManager.SignOutAsync();
+            await _signInManager.SignInAsync(user, false);
+
+            profile.IsEditSuccess = result.Succeeded;
+            AddErrors(result);
+
+            if (ModelState.ErrorCount > 0) return View(profile);
+
+            return RedirectToAction("Profile");
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Customers()
+        {
+            var users = await _userManager.GetUsersInRoleAsync(Roles.User.ToString());
+
+            // Hold all service engineers in session
+            HttpContext.Session.SetSession("Customers", users);
+
+            return View(new CustomersViewModel
+            {
+                Customers = users?.ToList(),
+                Registration = new CustomerRegistrationViewModel()
+            });
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles="Admin")]
+        public async Task<IActionResult> Customers(CustomersViewModel customersObj)
+        {
+            customersObj.Customers = HttpContext.Session.GetSession<List<ApplicationUser>>("Customers");
+            if (!ModelState.IsValid) return View(customersObj);
+
+            var user = await _userManager.FindByEmailAsync(customersObj.Registration.Email);
+
+            // Update claims
+            var isActiveClaim = _userManager.GetClaimsAsync(user).Result.SingleOrDefault(x => x.Type == "IsActive");
+            var removeClaimResult = await _userManager.RemoveClaimAsync(user, new Claim(isActiveClaim.Type, isActiveClaim.Value));
+            var addClaimResult = await _userManager.AddClaimAsync(user, new Claim(isActiveClaim.Type, customersObj.Registration.IsActive.ToString()));
+
+            if (!customersObj.Registration.IsActive)
+            {
+                await _emailSender.SendEmailAsync(customersObj.Registration.Email, "Account Deactivated", $"You account has been deactivated!");
+            }
+
+            return RedirectToAction("Customers");
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLoginCallback(string returnUrl= null, string remoteError = null)
+        {
+            if (remoteError != null)
+            {
+                ModelState.AddModelError(string.Empty, $"Error from external provider: {remoteError}");
+                return View(nameof(Login));
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info is null) return RedirectToAction(nameof(Login));
+
+            // Sign in the user with this external login provider if the user already has a login
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
+            if (result.Succeeded)
+            {
+                _logger.LogInformation(5, $"USer logged in with {info.LoginProvider} provider");
+                return RedirectToAction("Dashboard", "Dashboard");
+            }
+            if (result.RequiresTwoFactor) return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl });
+            if (result.IsLockedOut) return View("Lockout");
+            else
+            {
+                // If the user does not have an account, ask the user to create an account
+                ViewData["ReturnUrl"] = returnUrl;
+                ViewData["LoginProvider"] = info.LoginProvider;
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
+            }
+        }
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult ExternalLogin(string provider, string returnUrl = null)
+        {
+            // Request a redirect to the external login provider
+            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { ReturnUrl = returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(properties, provider);
+        }
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl = null)
+        {
+            if (ModelState.IsValid)
+            {
+                // Get the information about the user from the external login provider
+                var info = await _signInManager.GetExternalLoginInfoAsync();
+                if (info is null) return View("ExternalLoginFailure");
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, EmailConfirmed = true };
+                var result = await _userManager.CreateAsync(user);
+
+                await _userManager.AddClaimAsync(user, new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", user.Email));
+                await _userManager.AddClaimAsync(user, new Claim("IsActive", "True"));
+
+                if (!result.Succeeded)
+                {
+                    result.Errors.ToList().ForEach(x => ModelState.AddModelError("", x.Description));
+                    return View("ExternalLoginConfirmation", model);
+                }
+
+                // Assign user to User Role
+                var roleResult = await _userManager.AddToRoleAsync(user, Roles.User.ToString());
+                if (!roleResult.Succeeded)
+                {
+                    roleResult.Errors.ToList().ForEach(x => ModelState.AddModelError("", x.Description));
+                    return View("ExternalLoginConfirmation", model);
+                }
+
+                if (result.Succeeded)
+                {
+                    result = await _userManager.AddLoginAsync(user, info);
+                    if (result.Succeeded)
+                    {
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        _logger.LogInformation(6, $"User created an account using {info.LoginProvider} provider");
+                        return RedirectToAction("Dashboard", "Dashboard");
+                    }
+                }
+                AddErrors(result);
+            }
+            ViewData["ReturnUrl"] = returnUrl;
+            return View(model);
+        }
     }
 }

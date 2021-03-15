@@ -1,3 +1,4 @@
+using ASC.Models.BaseTypes;
 using ASC.Web.Configuration;
 using ASC.Web.Data;
 using ASC.Web.Models;
@@ -47,7 +48,11 @@ namespace ASC.Web
                     .AddDefaultTokenProviders()
                     .CreateAzureTablesIfNotExists<ApplicationDbContext>();
 
-            services.AddAuthentication();
+            services.AddAuthentication().AddGoogle(options=> 
+            {
+                options.ClientId = Environment.GetEnvironmentVariable(ProjectConstants.GoogleClientId);
+                options.ClientSecret = Environment.GetEnvironmentVariable(ProjectConstants.GoogleClientSecret);
+            });
             services.AddAuthorization(config =>
             {
                 config.AddPolicy("ActiveOnly", policy => policy.RequireClaim("IsActive",new string[] { "True", "true","TRUE" }));

@@ -12,6 +12,8 @@ namespace ASC.Models.BaseTypes
         public static readonly string SMTPMailAccount = "SMTPMailAccount";
         public static readonly string SMTPMailPassword = "SMTPMailPassword";
         public static readonly string MYOUTLOOKEMAIL = "MYOUTLOOKEMAIL";
+        public static readonly string GoogleClientId = "GoogleClientId";
+        public static readonly string GoogleClientSecret = "GoogleClientSecret";
     }
 
     public enum Roles

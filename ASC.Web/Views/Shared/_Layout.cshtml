@@ -1,4 +1,6 @@
-﻿@{
+﻿@inject SignInManager<ApplicationUser> signInManager
+
+@{
     Layout = "_MasterLayout";
 }
 <header>
@@ -8,8 +10,17 @@
                 <img class="responsive-img" src="~/images/logo.png" alt="Logo" />
             </a>
             <ul class="right hide-on-med-and-down">
-                <li><a href="/Account/Login">Login</a></li>
-                <li><a href="/Home/Contact">Contact</a></li>
+                @if (signInManager.IsSignedIn(User))
+                {
+                    <li><a>Welcome @User.Identity.Name</a></li>
+                    <li><a href="/Dashboard/Dashboard">Dashboard</a></li>
+                    <li><a id="mainAncrLogout">Logout</a></li>
+                }
+                else
+                {
+                    <li><a href="/Account/Login">Login</a></li>
+                    <li><a href="/Home/Contact">Contact</a></li>
+                }
             </ul>
             <a href="#" data-activates="nav-mobile" class="button-collapse">
                 <i class="material-icons">menu</i>
@@ -36,6 +47,15 @@
             <img src="~/images/background1.jpg" alt="Unsplashed background img 1">
         </div>
     </div>
+    <form class="hide" asp-controller="Account" asp-action="Logout" method="post" id="mainLogoutForm">
+        <input type="submit" value="Logout" />
+    </form>
+    <script type="text/javascript">
+        // Logout
+        document.getElementById('mainAncrLogout').addEventListener("click", function () {
+            document.getElementById('mainLogoutForm').submit();
+        });
+    </script>
 </header>
 <!-- Render Body -->
 <main>

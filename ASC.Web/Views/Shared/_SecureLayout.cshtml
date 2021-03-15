@@ -1,10 +1,8 @@
-﻿@using Microsoft.AspNetCore.Http
-@using ASC.Utilities
-@inject IHttpContextAccessor UserHttpContext
+﻿@inject IHttpContextAccessor userHttpContext
 
 @{
     Layout = "_MasterLayout";
-    var currentUser = UserHttpContext.HttpContext.User.GetCurrenUserDetails();
+    var currentUser = userHttpContext.HttpContext.User.GetCurrenUserDetails();
 }
 <!-- Header -->
 <header class="secureLayout">
@@ -12,7 +10,7 @@
         <div class="nav-wrapper row valign-wrapper">
             <div class="col s12 valign-wrapper">
                 <a href="#" data-target="nav-mobile" class="button-collapse sidenav-trigger top-nav full hide-on-large-only white-text"><i class="material-icons">menu</i></a>
-                <h5><a class="page-title">Automobile Service Center</a></h5>
+                <h5><a class="page-title" href="/">Automobile Service Center</a></h5>
             </div>
         </div>
     </nav>
@@ -22,10 +20,6 @@
             <div class="user-view">
                 <div class="background blue-grey lighten-1"></div>
                 <a href="#!user"><img class="circle" src="~/images/male.png"></a>
-                @foreach (var role in currentUser.Roles)
-                {
-                    <a href="#!role"><span class="white-text name">@role</span></a>
-                }
                 <a href="#!name"><span class="white-text name">@currentUser.Name</span></a>
                 <a href="#!email"><span class="white-text email">@currentUser.Email</span></a>
 
@@ -37,25 +31,33 @@
                 Dashboard
             </a>
         </li>
-        <li>
-            <ul class="collapsible" data-collapsible="accordion">
-                <li>
-                    <a class="collapsible-header">User Administration<i class="material-icons">supervisor_account</i></a>
-                    <div class="collapsible-body">
-                        <ul>
-                            <li><a href="#!">Customers<i class="material-icons">account_box</i></a></li>
-                            <li><a href="#!">Deactivate User<i class="material-icons">remove_circle</i></a></li>
-                            <li>
-                                <a asp-controller="Account" asp-action="ServiceEngineers">
-                                    Service Engineers
-                                    <i class="material-icons">person_add</i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
-            </ul>
-        </li>
+        @if (currentUser.Roles.Any(x=>x=="Admin"))
+        {
+            <li>
+                <ul class="collapsible" data-collapsible="accordion">
+                    <li>
+                        <a class="collapsible-header">User Administration<i class="material-icons">supervisor_account</i></a>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li>
+                                    <a asp-controller="Account" asp-action="Customers">
+                                        Customers
+                                        <i class="material-icons">account_box</i>
+                                        </a>
+                                </li>
+                                <li><a href="#!">Deactivate User<i class="material-icons">remove_circle</i></a></li>
+                                <li>
+                                    <a asp-controller="Account" asp-action="ServiceEngineers">
+                                        Service Engineers
+                                        <i class="material-icons">person_add</i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </li>
+        }
         <li>
             <a class="collapsible-header" href="#!">
                 <i class="material-icons">perm_data_setting</i>
