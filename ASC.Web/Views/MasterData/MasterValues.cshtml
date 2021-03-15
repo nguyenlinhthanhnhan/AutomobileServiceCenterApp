@@ -16,6 +16,11 @@
             </select>
             <label>Partition Key</label>
         </div>
+        <div class="col s4 offset-s4 padding-bottom-15px right-align">
+            <a class="modal-trigger waves-effect waves-light" href="#modal1">
+                <img src="~/images/excel.png" />
+            </a>
+        </div>
         <div class="col s12 padding-bottom-15px">
             @* Display List of Master Values *@
             <table class="highlight centered" id="tblMasterValues">
@@ -31,65 +36,109 @@
             </table>
         </div>
     </div>
-    <div class="row"></div>
+
     @* Details Section *@
     <div class="row z-depth-3">
-        <div class="col s12 padding-0px">
-            <div class="section white-text padding-left-10px blue-grey lighten-1">
-                <h5>Master Value Details</h5>
-            </div>
-            <div class="divider"></div>
-            <form asp-controller="MasterData" asp-action="MasterValues" method="post"
-                  class="col s12" id="formMasterValue">
-                <div class="row">
-                    <input type="hidden" asp-for="IsEdit" />
-                    <input type="hidden" asp-for="MasterValueInContext.RowKey" />
-                    <input type="hidden" asp-for="MasterValueInContext.PartitionKey" />
-                    <div class="input-field col s4">
-                        <input asp-for="MasterValueInContext.RowKey" id="Input_MasterKey_RowKey" disabled="disabled" />
-                        <label asp-for="MasterValueInContext.RowKey"></label>
-                    </div>
-                    <div class="input-field col s4">
-                        <select id="Select_MasterValueInContext_PartitionKey"
-                                asp-for="MasterValueInContext.PartitionKey"
-                                asp-items="@(new SelectList(ViewBag.MasterKeys,"RowKey","PartitionKey"))"
-                                required="required">
-                            <option value="">--Select--</option>
-                        </select>
-                        <label>Partition Key</label>
-                    </div>
-                    <div class="input-field col s4">
-                        <input asp-for="MasterValueInContext.Name" class="validate" />
-                        <label asp-for="MasterValueInContext.Name"></label>
-                    </div>
+        <div class="row">
+            <div class="col s12 padding-0px">
+                <div class="section white-text padding-left-10px blue-grey lighten-1">
+                    <h5>Master Value Details</h5>
                 </div>
-                <div class="row">
-                    <div class="input-field col s4">
-                        <div class="switch">
-                            <label>
-                                Is Active
-                                <input asp-for="MasterValueInContext.IsActive"
-                                       class="validate" />
-                                <span class="lever"></span>
-                            </label>
+                <div class="divider"></div>
+                <form asp-controller="MasterData" asp-action="MasterValues" method="post"
+                      class="col s12" id="formMasterValue">
+                    <div class="row">
+                        <input type="hidden" asp-for="IsEdit" />
+                        <input type="hidden" asp-for="MasterValueInContext.RowKey" />
+                        <input type="hidden" asp-for="MasterValueInContext.PartitionKey" />
+                        <div class="input-field col s4">
+                            <input asp-for="MasterValueInContext.RowKey" id="Input_MasterKey_RowKey" disabled="disabled" />
+                            <label asp-for="MasterValueInContext.RowKey"></label>
+                        </div>
+                        <div class="input-field col s4">
+                            <select id="Select_MasterValueInContext_PartitionKey"
+                                    asp-for="MasterValueInContext.PartitionKey"
+                                    asp-items="@(new SelectList(ViewBag.MasterKeys,"RowKey","PartitionKey"))"
+                                    required="required">
+                                <option value="">--Select--</option>
+                            </select>
+                            <label>Partition Key</label>
+                        </div>
+                        <div class="input-field col s4">
+                            <input asp-for="MasterValueInContext.Name" class="validate" />
+                            <label asp-for="MasterValueInContext.Name"></label>
                         </div>
                     </div>
-                    <div class="input-field col s8 right-align">
-                        <button class="btn waves-effect waves-light btnSubmit" type="button" name="action">
-                            Create
-                            <i class="material-icons right">send</i>
-                        </button>
-                        <button class="btn waves-effect waves-light reset red lighten-1" type="button" name="action">
-                            Reset
-                        </button>
+                    <div class="row">
+                        <div class="input-field col s4">
+                            <div class="switch">
+                                <label>
+                                    Is Active
+                                    <input asp-for="MasterValueInContext.IsActive"
+                                           class="validate" />
+                                    <span class="lever"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="input-field col s8 right-align">
+                            <button class="btn waves-effect waves-light btnSubmit" type="button" name="action">
+                                Create
+                                <i class="material-icons right">send</i>
+                            </button>
+                            <button class="btn waves-effect waves-light reset red lighten-1" type="button" name="action">
+                                Reset
+                            </button>
+                        </div>
+                        <div class="row col s12 right-align" asp-validation-summary="All"></div>
                     </div>
-                    <div class="row col s12 right-align" asp-validation-summary="All"></div>
-                </div>
-            </form>
+                </form>
+            </div>
+            <div class="row"></div>
         </div>
-        <div class="row"></div>
+    </div>
+</div>
+
+<!-- Modal Structure -->
+<div id="modal1" class="modal modal-fixed-footer">
+    <div class="modal-content">
+        <h4>Upload Excel</h4>
+        <p>Upload the Excel file which contains all the master values.</p>
+        <!-- Div to display Errors-->
+        <div class="row hide divErrors">
+            <div class="col s12">
+                <div class="card-panel red lighten-1">
+                    <span class="white-text errors"></span>
+                </div>
+            </div>
+        </div>
+        <!-- Div to display progress -->
+        <div class="progress hide">
+            <div class="indeterminate"></div>
+        </div>
+        <form action="UploadExcel" controller="MasterData" method="post">
+            <div class="file-field input-field">
+                <div class="btn">
+                    <span>File</span>
+                    <input type="file" id="files">
+                </div>
+                <div class="file-path-wrapper">
+                    <input class="file-path validate" type="text">
+                </div>
+                <div class="input-field row right">
+                    <button class="btn waves-effect waves-light btnUpload" type="button" name="action">
+                        Upload
+                        <i class="material-icons right">send</i>
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
     <script>
+        $('.modal').modal();
+    </script>
+</div>
+
+<script type="text/javascript">
         $(document).ready(function () {
             $('.modal').modal();
             // Need to pass Verification Token to get Request Validated for Forgery
@@ -230,9 +279,9 @@
             // Excel Upload
             $(document).on('click', '.btnUpload', function () {
                 // Get all files from input file tag
+                var data = new FormData();
                 var fileUpload = $("#files").get(0);
                 var files = fileUpload.files;
-                var data = new FormData();
 
                 // Process the file create FormData object
                 $.each(files, function (i) {
@@ -269,5 +318,4 @@
             });
 
         });
-    </script>
-</div>
+</script>

@@ -4,9 +4,12 @@ using ASC.Utilities;
 using ASC.Web.Models.MasterDataViewModels;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -103,6 +106,53 @@ namespace ASC.Web.Controllers
             }
 
             return Json(true);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadExcel()
+        {
+            var files = Request.Form.Files;
+            // Validations, some basic security
+            if (!files.Any()) return Json(new { Error = true, Text = "Upload a file" });
+
+            var excelFile = files.First();
+            if(excelFile.Length<=0) return Json(new { Error = true, Text = "Upload a file" });
+
+            // Parse Excel Data
+            var masterData = await ParseMasterDataExcel(excelFile);
+            var result = await _masterData.UploadBulkMasterData(masterData);
+
+            return Json(new { Success = result });
+        }
+
+        private async Task<List<MasterDataValue>> ParseMasterDataExcel(IFormFile excelFile)
+        {
+            var masterValueList = new List<MasterDataValue>();
+            using (var memoryStream = new MemoryStream())
+            {
+                // Get MemoryStream from Excel file
+                await excelFile.CopyToAsync(memoryStream);
+                // Create a ExcelPackage object from MemoryStream
+                using ExcelPackage package = new(memoryStream);
+                // Get the first Excel sheet from the Workbook
+                ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
+                int rowCount = worksheet.Dimension.Rows;
+
+                // Iterate all the rows and create the list of MasterDataValue
+                // Ignore first row as it is header
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    var masterDataValue = new MasterDataValue();
+                    masterDataValue.RowKey = Guid.NewGuid().ToString();
+                    masterDataValue.PartitionKey = worksheet.Cells[row, 1].Value.ToString();
+                    masterDataValue.Name = worksheet.Cells[row, 2].Value.ToString();
+                    masterDataValue.IsActive = bool.Parse(worksheet.Cells[row, 3].Value.ToString());
+
+                    masterValueList.Add(masterDataValue);
+                }
+            }
+            return masterValueList;
         }
     }
 }
