@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 namespace ASC.Web.Controllers
 {
     [Authorize(Roles ="Admin")]
-    public class MasterDataController : Controller
+    public class MasterDataController : BaseController
     {
         private readonly IMasterDataOperations _masterData;
         private readonly IMapper _mapper;

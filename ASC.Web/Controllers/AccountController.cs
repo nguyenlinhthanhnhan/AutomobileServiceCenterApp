@@ -1,5 +1,6 @@
 ﻿using ASC.Models.BaseTypes;
 using ASC.Utilities;
+using ASC.Web.Filters;
 using ASC.Web.Models;
 using ASC.Web.Models.AccountViewModels;
 using ASC.Web.Services;
@@ -94,7 +95,7 @@ namespace ASC.Web.Controllers
                                                                       lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation(1, $"User {user.UserName}: {user.Email} logged in.");
+                    _logger.LogInformation(1, $"User {user.UserName}: {user.Email} logged in");
                     if (roles.Select(x => x.ToLower()).Contains("admin")) return RedirectToAction("Dashboard", "Dashboard");
                     else return LocalRedirect(returnUrl ?? Url.Content("~/"));
                 }

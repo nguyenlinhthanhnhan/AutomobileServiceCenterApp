@@ -38,9 +38,11 @@ namespace ASC.Web.Controllers
         public IActionResult Contact() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult Error(string id)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            if (id is "404") return View("NotFound");
+            if (id is "401" && User.Identity.IsAuthenticated) return View("AccessDenied");
+            else return RedirectToAction("Login", "Account");
         }
     }
 }
